@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Batch &amp; Price</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F6F4; --surface:#FFFFFF; --ink:#18271F; --muted:#586A60; --line:#DCE4DF; --field:#F7F9F8;
+  --brand:#2D6A4F; --brand-ink:#FFFFFF; --brand-soft:#E0EFE6;
+  --good:#1B6E48; --good-soft:#DDF1E5; --warn:#855000; --warn-soft:#FCEFCF; --bad:#B3261E; --bad-soft:#FBE3E0;
+  --hero-bg:#214F3B; --hero-ink:#F3FAF6; --gold:#F6C453;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1613; --surface:#17211C; --ink:#E7EFEA; --muted:#9DB0A6; --line:#2A3A32; --field:#1C2923;
+    --brand:#5FBE97; --brand-ink:#0C1A13; --brand-soft:#1F3329;
+    --good:#7FD6A8; --good-soft:#1B3427; --warn:#F0B554; --warn-soft:#3A2D12; --bad:#FF9A92; --bad-soft:#3B1B18;
+    --hero-bg:#1B3A2E; --hero-ink:#E7F5EC; --gold:#F6C453;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1613; --surface:#17211C; --ink:#E7EFEA; --muted:#9DB0A6; --line:#2A3A32; --field:#1C2923;
+  --brand:#5FBE97; --brand-ink:#0C1A13; --brand-soft:#1F3329;
+  --good:#7FD6A8; --good-soft:#1B3427; --warn:#F0B554; --warn-soft:#3A2D12; --bad:#FF9A92; --bad-soft:#3B1B18;
+  --hero-bg:#1B3A2E; --hero-ink:#E7F5EC; --gold:#F6C453;
+  color-scheme: dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 "Nunito Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+h1,h2,.big{font-family:"Bricolage Grotesque","Nunito Sans",system-ui,sans-serif}
+h1{font-size:28px;line-height:1.1;margin:0;letter-spacing:-.01em}
+h2{font-size:21px;line-height:1.25;margin:0 0 4px;font-weight:700;display:flex;gap:12px;align-items:center}
+.num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:inline-grid;place-items:center;font-size:16px}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px 110px}
+.sub{color:var(--muted);margin-top:4px}
+.muted{color:var(--muted)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding:24px 0 16px}
+.tabs{display:flex;background:var(--surface);border-radius:14px;padding:4px;gap:4px}
+.tabs button{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;padding:0 18px;min-height:46px;border-radius:11px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink)}
+.badge{display:inline-block;min-width:22px;padding:0 6px;margin-left:6px;border-radius:99px;background:var(--warn-soft);color:var(--warn);font-size:13px;text-align:center}
+.notice{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;background:var(--brand-soft);border-radius:14px;padding:12px 16px;margin-bottom:16px}
+.notice.warnbox{background:var(--warn-soft);color:var(--warn)}
+.notice[hidden]{display:none}
+
+.cols{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+@media(min-width:960px){
+  .cols{grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+  .col-r{position:sticky;top:16px}
+}
+.card{background:var(--surface);border-radius:18px;padding:22px}
+.cq{container-type:inline-size}
+.lead{color:var(--muted);margin:2px 0 16px}
+.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.l{font-weight:700;font-size:15px}
+.hint{font-size:14px;color:var(--muted)}
+.hint.warn{color:var(--warn)}
+.err{font-size:15px;color:var(--bad);font-weight:700;margin-top:8px}
+.err:empty{display:none}
+.ctl,.inp{border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink);min-height:48px}
+.ctl{font:inherit;padding:0 12px;width:100%}
+.inp{display:flex;align-items:center;min-width:0}
+.inp input{border:0;background:transparent;flex:1;min-width:0;min-height:46px;padding:0 12px;font:inherit;color:inherit}
+.inp input:focus-visible{outline:none}
+.inp input:disabled{opacity:.5}
+.inp:focus-within,.ctl:focus-visible{outline:3px solid var(--brand);outline-offset:1px}
+.inp .u{padding:0 12px;color:var(--muted);font-size:15px;white-space:nowrap}
+.inp .u:first-child{padding-right:0}
+.u-sel{border:0;background:transparent;font:inherit;font-weight:700;color:var(--ink);min-height:46px;padding:0 8px 0 4px}
+.u-sel:focus-visible{outline:none}
+
+.btn{min-height:48px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{min-height:40px;padding:0 14px;font-size:15px}
+.link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--brand);text-decoration:underline;cursor:pointer;min-height:36px}
+.icon{width:36px;height:36px;border:0;background:transparent;border-radius:8px;font-size:24px;line-height:1;color:var(--muted);cursor:pointer;justify-self:end}
+.icon:hover{background:var(--line);color:var(--ink)}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:13px;font-weight:700;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+
+.rbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.rbar select{flex:1 1 220px;max-width:340px;font-weight:700}
+.result{margin-top:16px;padding:12px 16px;border-radius:12px;background:var(--brand-soft);font-size:18px}
+
+/* lines */
+.lhead,.line{display:grid;gap:6px 10px;align-items:center}
+.lhead{font-size:14px;font-weight:700;color:var(--muted);margin-top:6px;padding-bottom:6px}
+.line{padding:12px 0;border-top:1px solid var(--line)}
+.lhead>*,.line>*{min-width:0}
+.rl{grid-template-columns:minmax(0,1fr) 120px 124px 74px 80px 28px}
+.line.rl{grid-template-areas:"name qty price weigh cost del" "alert alert alert alert alert alert"}
+.sl{grid-template-columns:minmax(0,1fr) 112px 124px 32px}
+.line.sl{grid-template-areas:"name qty price del" "alert alert alert alert"}
+.ml{grid-template-columns:minmax(0,1fr) 88px 100px 108px 76px 28px}
+.line.ml{grid-template-areas:"name qty price per each del"}
+.c-name{grid-area:name}.c-qty{grid-area:qty}.c-price{grid-area:price}.c-del{grid-area:del;justify-self:end}.c-weigh{grid-area:weigh}.c-cost{grid-area:cost}.c-per{grid-area:per}.c-each{grid-area:each}.c-alert{grid-area:alert;font-size:15px}
+.c-alert:empty{display:none}
+.c-weigh,.c-cost,.c-each{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cl{display:none;font-size:13px;font-weight:700;color:var(--muted)}
+@container (max-width:560px){
+  .lhead{display:none}
+  .line{padding:16px 0}
+  .line .cl{display:block}
+  .line.rl{grid-template-columns:repeat(2,minmax(0,1fr)) 32px;grid-template-areas:"name name del" "qty price price" "weigh cost cost" "alert alert alert"}
+  .line.sl{grid-template-columns:repeat(2,minmax(0,1fr)) 32px;grid-template-areas:"name name del" "qty price price" "alert alert alert"}
+  .line.ml{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"name name del" "qty price per" "each each each"}
+}
+.total{margin-top:14px;font-size:18px}
+
+/* profit chips */
+.chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:6px 0 4px}
+.chip{border:2px solid var(--line);background:var(--field);color:var(--ink);border-radius:14px;padding:10px 6px;font:inherit;cursor:pointer;text-align:center;min-height:76px}
+.chip small{display:block;font-size:13px;color:var(--muted)}
+.chip b{display:block;font-size:20px;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.chip span{display:block;font-size:14px;font-weight:700}
+.chip.on{border-color:var(--brand);background:var(--brand-soft)}
+details{margin-top:18px}
+summary{cursor:pointer;font-weight:700;color:var(--brand);min-height:40px;display:flex;align-items:center}
+
+/* result */
+.hero{background:var(--hero-bg);color:var(--hero-ink);border-radius:20px;padding:24px 22px}
+.two{display:flex;flex-wrap:wrap;gap:14px 32px}
+.hero .lab{font-size:15px;opacity:.85}
+.hero .big{font-size:clamp(36px,7vw,48px);font-weight:700;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hero .big.gold{color:var(--gold)}
+.hero .ph{font-size:18px;font-weight:600;opacity:.7;letter-spacing:0}
+.hero .sub2{margin-top:14px;font-size:16px}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.15);margin:18px 0 12px}
+.bar span{display:block;height:100%}
+.legend{display:grid;gap:6px;font-size:14px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.c-mat{background:#8FD0B0}.c-oh{background:#A9BBC9}.c-pr{background:#F6C453}.c-dl{background:#CFC7E0}
+
+.prow{display:grid;gap:6px 10px;align-items:center;grid-template-columns:128px minmax(0,1fr) auto;grid-template-areas:"size n price" "sub sub act";padding:14px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.pk-size{grid-area:size}.pk-n{grid-area:n;color:var(--muted);font-size:15px}.pk-price{grid-area:price;text-align:right}.pk-price strong{font-size:22px;display:block}
+.pk-sub{grid-area:sub;font-size:14px;color:var(--muted)}.pk-sub b{color:var(--ink)}.pk-sub .neg{color:var(--bad)}
+.pk-act{grid-area:act;justify-self:end;font-size:15px}
+.ppanel{background:var(--field);border-radius:12px;padding:16px;margin:0 0 12px}
+.mu{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:6px 0}
+.mu .inp{width:150px;flex:none}
+.neg{color:var(--bad)}
+.result:empty{display:none}
+
+.sumbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--hero-bg);color:var(--hero-ink);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-around;gap:10px;cursor:pointer;border:0;font:inherit;text-align:center;width:100%}
+.sumbar[hidden]{display:none}
+.sumbar b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:20px;line-height:1.1}
+.sumbar span{font-size:13px;opacity:.85}
+@media(min-width:960px){.sumbar{display:none}}
+
+.empty p{color:var(--muted);margin:6px 0 14px;max-width:60ch}
+footer{margin-top:28px;color:var(--muted);font-size:15px}
+footer textarea{width:100%;min-height:120px;margin-top:10px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.hist{list-style:none;margin:8px 0 0;padding:0}
+.hist li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.hist .d{color:var(--muted);margin-right:8px;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;max-width:calc(100% - 32px);text-align:center;z-index:20}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:960px){#toast{bottom:calc(24px + env(safe-area-inset-bottom,0px))}}
+@media (prefers-reduced-motion:no-preference){#toast{transition:opacity .2s,transform .2s}.bar span{transition:width .25s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Batch &amp; Price</h1>
+      <p class="sub">Know what to buy, what to charge, and how many pieces you get.</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-recipes" data-act="tab" data-tab="recipes">Recipe &amp; price</button>
+      <button role="tab" id="tab-stock" data-act="tab" data-tab="stock">Stock<span id="lowbadge" class="badge" hidden></span></button>
+    </nav>
+  </header>
+
+  <div id="sample" class="notice" hidden>
+    <span>This is sample data (Thinai laddu). Change anything you like.</span>
+    <button class="btn small" data-act="clear-sample">Clear sample and start fresh</button>
+  </div>
+  <div id="savewarn" class="notice warnbox" hidden>This browser isn’t saving your data. Copy a backup from the bottom of the page before you leave.</div>
+
+  <main id="app"></main>
+
+  <footer>
+    <button class="link" data-act="toggle-backup">Back up or restore my data</button>
+    <div id="backup" hidden>
+      <p style="margin-top:8px">Your data lives only in this browser. Copy the text below and keep it safe. To restore, paste a backup into the box and press Restore.</p>
+      <textarea id="bk-text" aria-label="Backup text" spellcheck="false"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn small" data-act="copy-backup">Copy backup</button>
+        <button class="btn small danger" data-act="restore-backup">Restore from the text above</button>
+      </div>
+      <p class="err" id="bk-err" role="alert"></p>
+    </div>
+  </footer>
+</div>
+<datalist id="ing-list"></datalist>
+<button class="sumbar" id="sumbar" data-act="goto-price" hidden aria-label="Show my price details"></button>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var KEY='batch-and-price-v2';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var uid=function(){return Math.random().toString(36).slice(2,9)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var n=function(v){var x=parseFloat(v);return isFinite(x)&&x>0?x:0};
+var val=function(x){return x?String(+(+x).toFixed(4)):''};
+var OH=[['labour','Labour'],['power','Gas & electricity'],['transport','Transport'],['promo','Promotion'],['other','Anything else']];
+var PROFITS=[[25,'Lean'],[40,'Standard'],[60,'Premium']];
+
+function inr(x,d){d=d==null?2:d;return '₹'+(isFinite(x)?x:0).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function trim(x,d){return (+(+x).toFixed(d)).toLocaleString('en-IN',{maximumFractionDigits:d})}
+function gText(g){return g>=1000?trim(g/1000,2)+' kg':trim(g,1)+' g'}
+function pcsText(x){var f=Math.floor(x+0.05);return (Math.abs(x-f)<0.06?'':'about ')+trim(f,0)+(f===1?' piece':' pieces')}
+function today(){return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function dshort(s){var p=String(s).split('-');if(p.length<3)return s;return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}
+
+var S;
+function sampleData(){
+  var mk=function(name,price,stock){return {id:uid(),name:name,price:price,stock:stock}};
+  var ing=[mk('Thinai (foxtail millet)',60,5000),mk('Jaggery',65,3000),mk('Ghee',850,1000),mk('Elakki (cardamom)',2000,100),mk('Cashew',900,12),mk('Badam (almond)',1000,400),mk('Sesame seeds',400,300)];
+  var L=function(i,q){return {id:uid(),ingId:ing[i].id,qty:q}};
+  var r={id:uid(),name:'Thinai laddu',pieceG:25,req:20,reqUnit:'pcs',yield:0,
+    lines:[L(0,500),L(1,250),L(2,20),L(3,10),L(4,25),L(5,25),L(6,10)],
+    ohVal:50,ohUnit:'pct',split:false,oh:{labour:0,power:0,transport:0,promo:0,other:0},
+    profit:40,dealer:0,current:0,packs:[],roundPrice:1};
+  var mats=[{id:uid(),name:'Pouch 100 g',bought:100,paid:250,per:'pack'},{id:uid(),name:'Pouch 250 g',bought:100,paid:400,per:'pack'},{id:uid(),name:'Box 500 g',bought:50,paid:600,per:'pack'},{id:uid(),name:'Carton 1 kg',bought:20,paid:600,per:'pack'},{id:uid(),name:'Label sticker',bought:500,paid:500,per:'pack'}];
+  var use=function(a){var o={};a.forEach(function(i){o[mats[i].id]=1});return o};
+  r.packs=[{size:100,price:0,use:use([0,4])},{size:250,price:0,use:use([1,4])},{size:500,price:0,use:use([2,4])},{size:1000,price:0,use:use([3,4])}];
+  return {ingredients:ing,materials:mats,recipes:[r],history:[],ui:{tab:'recipes',rid:r.id,sample:true,more:false,confirm:null,batch:false,backup:false,openPack:null}};
+}
+function normalize(s){
+  s.ui=s.ui||{};var u=s.ui;
+  if(u.tab!=='stock')u.tab='recipes';
+  u.confirm=null;u.batch=false;u.openPack=null;u.backup=!!u.backup;u.sample=!!u.sample;u.more=!!u.more;
+  s.history=Array.isArray(s.history)?s.history:[];
+  s.materials=Array.isArray(s.materials)?s.materials:[];s.materials.forEach(function(m){m.bought=n(m.bought);m.paid=n(m.paid);if(m.per!=='piece')m.per='pack'});
+  s.ingredients.forEach(function(i){i.price=n(i.price);i.stock=(i.stock==null||i.stock==='')?null:n(i.stock)});
+  s.recipes.forEach(function(r){
+    r.oh=r.oh||{};OH.forEach(function(o){r.oh[o[0]]=n(r.oh[o[0]])});
+    r.lines=Array.isArray(r.lines)?r.lines:[];r.packs=(Array.isArray(r.packs)?r.packs:[250,500,1000]).map(function(q){return (q&&typeof q==='object')?{size:n(q.size),price:n(q.price),use:q.use||{}}:{size:n(q),price:0,use:{}}});
+    if(['pcs','kg','g'].indexOf(r.reqUnit)<0)r.reqUnit='pcs';
+    if(r.ohUnit!=='kg')r.ohUnit='pct';
+    if(r.roundPrice==null)r.roundPrice=1;
+  });
+  if(!s.recipes.some(function(r){return r.id===u.rid}))u.rid=s.recipes[0]?s.recipes[0].id:null;
+  return s;
+}
+var memOnly=false;
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var s=JSON.parse(raw);if(s&&Array.isArray(s.ingredients)&&Array.isArray(s.recipes))return normalize(s)}}
+  catch(e){memOnly=true}
+  return null;
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));memOnly=false}catch(e){memOnly=true}
+  $('#savewarn').hidden=!memOnly;
+}
+var ingById=function(id){return S.ingredients.find(function(i){return i.id===id})};
+var ingByName=function(nm){nm=nm.trim().toLowerCase();return S.ingredients.find(function(i){return i.name.toLowerCase()===nm})};
+function curRecipe(){return S.recipes.find(function(r){return r.id===S.ui.rid})||S.recipes[0]||null}
+function blankRecipe(){
+  var oh={};OH.forEach(function(o){oh[o[0]]=0});
+  return {id:uid(),name:'New recipe',pieceG:25,req:20,reqUnit:'pcs',yield:0,lines:[{id:uid(),ingId:'',qty:0}],ohVal:50,ohUnit:'pct',split:false,oh:oh,profit:40,dealer:0,current:0,packs:[100,250,500,1000].map(function(z){return {size:z,price:0,use:{}}}),roundPrice:1};
+}
+function findOrCreate(name){
+  var ing=ingByName(name);
+  if(!ing){ing={id:uid(),name:name.trim(),price:0,stock:null};S.ingredients.push(ing)}
+  return ing;
+}
+
+/* ---------- calculations ---------- */
+function calc(r){
+  var baseSum=0;r.lines.forEach(function(l){baseSum+=n(l.qty)});
+  var yld=n(r.yield)||baseSum,pieceG=n(r.pieceG);
+  var reqG=r.reqUnit==='pcs'?n(r.req)*pieceG:r.reqUnit==='kg'?n(r.req)*1000:n(r.req);
+  var scale=yld>0?reqG/yld:0,neededSum=0,totalCost=0,needBy={};
+  var rows=r.lines.map(function(l){
+    var ing=ingById(l.ingId),raw=n(l.qty)*scale,step=raw<5?0.1:1,need=Math.round(raw/step)*step;
+    if(need===0&&raw>0)need=step;need=+need.toFixed(2);
+    neededSum+=need;
+    var cost=need/1000*(ing?n(ing.price):0);totalCost+=cost;
+    if(ing)needBy[ing.id]=(needBy[ing.id]||0)+need;
+    return {l:l,ing:ing,raw:raw,need:need,cost:cost};
+  });
+  rows.forEach(function(x){
+    x.share=totalCost>0?x.cost/totalCost*100:0;
+    x.short=0;
+    if(x.ing&&x.ing.stock!=null){var t=needBy[x.ing.id];if(t>x.ing.stock+1e-9)x.short=t-x.ing.stock}
+    x.noPrice=!!(x.ing&&n(x.ing.price)<=0&&x.need>0);
+  });
+  var approx=baseSum>0?yld*neededSum/baseSum:reqG;
+  var mat=approx>0?totalCost/approx*1000:0;
+  var oh;
+  if(r.split)oh=OH.reduce(function(s,o){return s+n(r.oh[o[0]])},0);
+  else oh=r.ohUnit==='pct'?mat*n(r.ohVal)/100:n(r.ohVal);
+  var costKg=mat+oh,profitKg=costKg*Math.min(n(r.profit),1000)/100,sellKg=costKg+profitKg;
+  var dealer=Math.min(n(r.dealer),90),custKg=sellKg/(1-dealer/100);
+  return {rows:rows,baseSum:baseSum,yld:yld,pieceG:pieceG,reqG:reqG,scale:scale,neededSum:neededSum,totalCost:totalCost,approx:approx,pieces:pieceG>0?approx/pieceG:0,mat:mat,oh:oh,costKg:costKg,profitKg:profitKg,sellKg:sellKg,dealer:dealer,custKg:custKg,dealerKg:custKg-sellKg,ready:approx>0&&totalCost>0,needBy:needBy};
+}
+function priceFor(c,p){return c.costKg*(1+p/100)/(1-c.dealer/100)}
+function matEach(m){return m.bought>0?m.paid/m.bought:0}
+function pkgCost(pk,pieces){
+  var t=0;S.materials.forEach(function(m){var u=n(pk.use&&pk.use[m.id]);if(u)t+=matEach(m)*u*(m.per==='piece'?pieces:1)});
+  return t;
+}
+function packCalc(r,c,pk){
+  var g=n(pk.size),pieces=c.pieceG>0?g/c.pieceG:0,wp=Math.floor(pieces+0.05);
+  var pkg=pkgCost(pk,wp),cost=c.costKg*g/1000+pkg;
+  var raw=cost*(1+Math.min(n(r.profit),1000)/100)/(1-c.dealer/100),step=n(r.roundPrice);
+  var suggested=step>0?Math.ceil(raw/step-1e-9)*step:raw;
+  var charge=n(pk.price)>0?n(pk.price):suggested;
+  var profit=charge*(1-c.dealer/100)-cost;
+  return {cost:cost,pkg:pkg,charge:charge,suggested:suggested,profit:profit,perKg:g>0?profit/g*1000:0,pct:cost>0?profit/cost*100:0,pieces:pieces};
+}
+function shortCount(){
+  var r=curRecipe();if(!r)return 0;
+  var c=calc(r),seen={},k=0;
+  c.rows.forEach(function(x){if(x.short>0&&!seen[x.ing.id]){seen[x.ing.id]=1;k++}});
+  return k;
+}
+
+/* ---------- recipe view ---------- */
+function lineHTML(x){
+  var l=x.l,id=l.id,ing=x.ing;
+  return '<div class="line rl" data-line="'+id+'">'+
+  '<label class="c-name"><span class="cl">Ingredient</span><input class="ctl" type="text" list="ing-list" data-lf="name" value="'+esc(ing?ing.name:'')+'" placeholder="Type or pick an ingredient" autocomplete="off" aria-label="Ingredient name"></label>'+
+  '<label class="c-qty"><span class="cl">Usual batch</span><span class="inp"><input type="number" inputmode="decimal" min="0" step="any" data-lf="qty" value="'+val(l.qty)+'" placeholder="0" aria-label="Amount in grams"><span class="u">g</span></span></label>'+
+  '<label class="c-price"><span class="cl">Price per kg</span><span class="inp"><span class="u">₹</span><input type="number" inputmode="decimal" min="0" step="any" data-lf="price" value="'+(ing?val(ing.price):'')+'" placeholder="'+(ing?'0':'—')+'"'+(ing?'':' disabled')+' aria-label="Price per kg"></span></label>'+
+  '<div class="c-weigh"><span class="cl">To weigh</span><span data-out="need-'+id+'"></span></div>'+
+  '<div class="c-cost"><span class="cl">Cost</span><span data-out="cost-'+id+'"></span></div>'+
+  '<button class="icon c-del" data-act="del-line" data-id="'+id+'" aria-label="Remove this ingredient">×</button>'+
+  '<div class="c-alert" data-out="alert-'+id+'"></div></div>';
+}
+function packPanel(pk,i){
+  var h='<div class="ppanel"><div class="fld"><label class="l" for="pp-'+i+'">My selling price for this pack (optional)</label><span class="inp"><span class="u">₹</span><input id="pp-'+i+'" type="number" inputmode="decimal" min="0" step="any" data-pkf="price" data-i="'+i+'" value="'+val(pk.price)+'" placeholder="0"></span><span class="hint" data-out="pk-sug-'+i+'"></span></div>';
+  h+='<p class="l" style="margin-top:16px">Packaging used in this pack</p>';
+  if(!S.materials.length)h+='<p class="hint">No packaging materials yet. <button class="link" data-act="goto-mats">Add them on the Stock tab</button>.</p>';
+  else h+=S.materials.map(function(m){return '<div class="mu"><span>'+esc(m.name||'Unnamed')+' <span class="hint">'+inr(matEach(m))+' each</span></span><span class="inp"><input type="number" inputmode="decimal" min="0" step="any" data-use="'+m.id+'" data-i="'+i+'" value="'+val(pk.use[m.id])+'" placeholder="0" aria-label="'+esc(m.name)+' used"><span class="u">'+(m.per==='piece'?'per piece':'per pack')+'</span></span></div>'}).join('');
+  h+='<p style="margin-top:10px">Packaging cost for this pack: <b data-out="pk-pkg-'+i+'"></b></p><div class="row" style="margin-top:10px"><button class="btn small danger" data-act="del-pack" data-i="'+i+'">Remove this pack size</button></div></div>';
+  return h;
+}
+function recipeView(){
+  var r=curRecipe();
+  if(!r)return '<section class="card empty"><h2>Add your first recipe</h2><p>Add the ingredients of one usual batch. This page scales it, prices it, and counts your pieces.</p><button class="btn primary" data-act="new-recipe">New recipe</button></section>';
+  var c=calc(r);
+  var bar='<div class="rbar"><label style="position:absolute;left:-9999px" for="rsel">Recipe</label><select class="ctl" id="rsel">'+S.recipes.map(function(x){return '<option value="'+x.id+'"'+(x.id===r.id?' selected':'')+'>'+esc(x.name||'Untitled')+'</option>'}).join('')+'</select>';
+  if(S.ui.confirm==='recipe')bar+='<span>Delete “'+esc(r.name)+'”?</span><button class="btn small danger" data-act="del-recipe-yes">Yes, delete</button><button class="btn small" data-act="del-recipe-no">Keep it</button>';
+  else bar+='<button class="btn small" data-act="new-recipe">＋ New</button><button class="btn small" data-act="del-recipe">Delete</button>';
+  bar+='</div>';
+
+  var make='<section class="card" aria-labelledby="h1"><h2 id="h1"><span class="num">1</span>What are you making?</h2><p class="lead">Tell us how big one piece is and how many you want.</p>'+
+  '<div class="grid2" style="margin-top:0"><label class="fld"><span class="l">Name</span><input class="ctl" type="text" data-k="name" value="'+esc(r.name)+'"></label>'+
+  '<div class="fld"><label class="l" for="f-piece">Weight of one piece</label><span class="inp"><input id="f-piece" type="number" inputmode="decimal" min="0" step="any" data-k="pieceG" value="'+val(r.pieceG)+'" placeholder="25"><span class="u">g</span></span></div></div>'+
+  '<div class="grid2"><div class="fld"><label class="l" for="f-req">I want to make</label><span class="inp"><input id="f-req" type="number" inputmode="decimal" min="0" step="any" data-k="req" value="'+val(r.req)+'" placeholder="0"><select class="u-sel" data-k="reqUnit" aria-label="Unit"><option value="pcs"'+(r.reqUnit==='pcs'?' selected':'')+'>pieces</option><option value="kg"'+(r.reqUnit==='kg'?' selected':'')+'>kg</option><option value="g"'+(r.reqUnit==='g'?' selected':'')+'>g</option></select></span></div></div>'+
+  '<p class="result" data-out="scale"></p></section>';
+
+  var ingr='<section class="card cq" aria-labelledby="h2"><h2 id="h2"><span class="num">2</span>Ingredients</h2><p class="lead">List your usual batch. Prices are remembered, so you only type each one once.</p>'+
+  '<div class="lhead rl"><span>Ingredient</span><span>Usual batch</span><span>Price per kg</span><span>To weigh</span><span>Cost</span><span></span></div>'+
+  c.rows.map(lineHTML).join('')+
+  '<div class="row" style="margin-top:12px"><button class="btn small" data-act="add-line">＋ Add ingredient</button></div>'+
+  '<p class="total" data-out="tot"></p><div data-out="batchbar" style="margin-top:14px"></div></section>';
+
+  var ohFields;
+  if(r.split)ohFields='<div class="grid2" style="margin-top:0">'+OH.map(function(o){return '<div class="fld"><label class="l" for="oh-'+o[0]+'">'+o[1]+'</label><span class="inp"><span class="u">₹</span><input id="oh-'+o[0]+'" type="number" inputmode="decimal" min="0" step="any" data-oh="'+o[0]+'" value="'+val(r.oh[o[0]])+'" placeholder="0"><span class="u">per kg</span></span></div>'}).join('')+'</div><p class="hint" style="margin-top:8px" data-out="oh-total"></p><button class="link" data-act="split-off">Use one number instead</button>';
+  else ohFields='<div class="fld"><label class="l" for="f-oh">Labour, gas, transport and the rest</label><span class="inp"><input id="f-oh" type="number" inputmode="decimal" min="0" step="any" data-k="ohVal" value="'+val(r.ohVal)+'" placeholder="0"><select class="u-sel" data-k="ohUnit" aria-label="Unit"><option value="pct"'+(r.ohUnit==='pct'?' selected':'')+'>% of ingredient cost</option><option value="kg"'+(r.ohUnit==='kg'?' selected':'')+'>₹ per kg</option></select></span><span class="hint" data-out="oh-note"></span></div><button class="link" data-act="split-on">Enter each cost separately</button>';
+
+  var costs='<section class="card" aria-labelledby="h3"><h2 id="h3"><span class="num">3</span>Costs and profit</h2><p class="lead">One number for everything besides ingredients, then pick your profit.</p>'+ohFields+
+  '<div class="fld" style="margin-top:20px"><span class="l">How much profit do you want?</span></div><div class="chips" role="group" aria-label="Profit on cost">'+
+  PROFITS.map(function(p){return '<button class="chip" data-act="profit" data-p="'+p[0]+'" aria-pressed="false"><small>'+p[1]+'</small><b>'+p[0]+'%</b><span data-out="chip-'+p[0]+'"></span></button>'}).join('')+'</div>'+
+  '<div class="fld" style="max-width:260px;margin-top:10px"><label class="l" for="f-profit">Or type your own</label><span class="inp"><input id="f-profit" type="number" inputmode="decimal" min="0" step="any" data-k="profit" value="'+val(r.profit)+'" placeholder="0"><span class="u">% on cost</span></span></div><p class="hint" style="margin-top:6px" data-out="margin-note"></p>'+
+  '<details id="more"'+(S.ui.more?' open':'')+'><summary>More options</summary>'+
+  '<div class="grid2"><div class="fld"><label class="l" for="f-dealer">Dealer margin</label><span class="inp"><input id="f-dealer" type="number" inputmode="decimal" min="0" max="90" step="any" data-k="dealer" value="'+val(r.dealer)+'" placeholder="0"><span class="u">% of shelf price</span></span><span class="hint">Leave at 0 if you sell directly.</span></div>'+
+  '<div class="fld"><label class="l" for="f-yield">Finished weight of my usual batch</label><span class="inp"><input id="f-yield" type="number" inputmode="decimal" min="0" step="any" data-k="yield" value="'+val(r.yield)+'" placeholder="auto"><span class="u">g</span></span><span class="hint" data-out="yield-hint"></span></div>'+
+  '<div class="fld"><label class="l" for="f-cur">What I charge today</label><span class="inp"><span class="u">₹</span><input id="f-cur" type="number" inputmode="decimal" min="0" step="any" data-k="current" value="'+val(r.current)+'" placeholder="0"><span class="u">per kg</span></span></div>'+
+  '<label class="fld"><span class="l">Round pack prices up to</span><select class="ctl" data-k="roundPrice"><option value="0"'+(+r.roundPrice===0?' selected':'')+'>Exact amount</option><option value="1"'+(+r.roundPrice===1?' selected':'')+'>Next ₹1</option><option value="5"'+(+r.roundPrice===5?' selected':'')+'>Next ₹5</option><option value="10"'+(+r.roundPrice===10?' selected':'')+'>Next ₹10</option></select></label></div>'+
+  '<p style="margin-top:12px" data-out="compare"></p></details></section>';
+
+  var hero='<section class="hero" id="price" aria-labelledby="h4"><h2 id="h4" style="font-size:17px;font-weight:600;opacity:.9;margin-bottom:10px"><span class="num" style="background:var(--hero-ink);color:var(--hero-bg)">4</span>Your price</h2><div class="two"><div><div class="lab">Per piece</div><div class="big gold" data-out="h-piece"></div></div><div><div class="lab" data-out="h-label">Per kg</div><div class="big" data-out="h-kg"></div></div></div><p class="sub2" data-out="h-sub"></p><div data-out="bar"></div></section>';
+  var packs='<section class="card" aria-labelledby="hp"><h2 id="hp" style="font-size:19px">Pack prices and profit</h2><p class="lead" style="margin-bottom:10px">Prices include packaging. Open “Packaging &amp; price” on a pack to pick its materials or set your own price.</p><p class="result" style="font-size:16px;margin:0 0 6px" data-out="pk-best"></p>'+
+  r.packs.map(function(pk,i){var open=S.ui.openPack===i;return '<div class="prow"><span class="inp pk-size"><input type="number" inputmode="decimal" min="0" step="any" data-pkf="size" data-i="'+i+'" value="'+val(pk.size)+'" aria-label="Pack size in grams"><span class="u">g</span></span><span class="pk-n" data-out="pk-n-'+i+'"></span><div class="pk-price"><strong data-out="pk-price-'+i+'"></strong></div><div class="pk-sub" data-out="pk-sub-'+i+'"></div><button class="link pk-act" data-act="pk-open" data-i="'+i+'">'+(open?'Done':'Packaging &amp; price')+'</button></div>'+(open?packPanel(pk,i):'')}).join('')+
+  '<div class="row" style="margin-top:12px"><button class="btn small" data-act="add-pack">＋ Add pack size</button></div></section>';
+
+  return bar+'<div class="cols"><div class="col">'+make+ingr+costs+'</div><div class="col col-r">'+hero+packs+'</div></div>';
+}
+
+function set(key,html){var el=document.querySelector('[data-out="'+key+'"]');if(el)el.innerHTML=html}
+
+function refresh(){
+  updateTabs();
+  var bar=$('#sumbar');
+  if(S.ui.tab!=='recipes'){bar.hidden=true;return}
+  var r=curRecipe();if(!r){bar.hidden=true;return}
+  var c=calc(r);
+  var opt=$('#rsel option:checked');if(opt)opt.textContent=r.name||'Untitled';
+  set('scale',c.scale>0?(c.pieceG>0?'Makes about <b>'+pcsText(c.pieces).replace('about ','')+'</b> · ':'')+'<b>'+gText(c.approx)+'</b>':(r.reqUnit==='pcs'&&!c.pieceG?'Enter the weight of one piece.':'Enter how much you want to make.'));
+  set('yield-hint',n(r.yield)?'':'Left blank, we use the ingredient total ('+gText(c.baseSum)+'). Enter less if the mix loses weight when cooked.');
+  var noPrice=[],top=null;
+  c.rows.forEach(function(x){
+    var id=x.l.id,has=n(x.l.qty)>0&&c.scale>0,al='';
+    set('need-'+id,has?gText(x.need):'—');
+    set('cost-'+id,(x.ing&&has&&!x.noPrice)?inr(x.cost):'—');
+    if(x.ing&&has){
+      if(x.noPrice)al='<span class="pill warn">Add a price</span>';
+      if(x.short>0)al+=(al?' ':'')+'<span class="pill bad">Short by '+gText(x.short)+'</span>';
+    }
+    set('alert-'+id,al);
+    if(x.noPrice&&noPrice.indexOf(x.ing.name)<0)noPrice.push(x.ing.name);
+    if(x.ing&&(!top||x.cost>top.cost))top=x;
+  });
+  var tot='To weigh <b>'+gText(c.neededSum)+'</b> · ingredients cost <b>'+inr(c.totalCost)+'</b>';
+  if(top&&top.share>=25)tot+='<br><span class="hint">Biggest cost: '+esc(top.ing.name)+' ('+top.share.toFixed(0)+'%)</span>';
+  if(noPrice.length)tot+='<br><span class="hint warn">No price yet for '+esc(noPrice.join(', '))+'. Your cost is too low until you add it.</span>';
+  set('tot',tot);
+  set('batchbar',batchBarHTML(c));
+  set('oh-total','Together: <b>'+inr(c.oh)+'</b> per kg.');
+  set('oh-note',r.ohUnit==='pct'?'That is '+inr(c.oh)+' per kg on top of ingredients.':'');
+  set('margin-note',c.sellKg>0?'On the price you receive, that is a '+(c.profitKg/c.sellKg*100).toFixed(1)+'% margin.':'');
+  PROFITS.forEach(function(p){
+    var kg=priceFor(c,p[0]),txt=c.ready?(c.pieceG>0?inr(kg*c.pieceG/1000)+' / piece':inr(kg,0)+' / kg'):'—';
+    set('chip-'+p[0],txt);
+    var b=$('.chip[data-p="'+p[0]+'"]');if(b){var on=Math.abs(n(r.profit)-p[0])<1e-9;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false')}
+  });
+  var cmp='',cur=n(r.current);
+  if(cur>0&&c.ready){
+    var d=cur-c.costKg;
+    if(d<0)cmp='<span class="pill bad">Loss</span> At ₹'+trim(cur,2)+' per kg you lose '+inr(-d)+' on every kg.';
+    else{cmp='At ₹'+trim(cur,2)+' per kg you earn <b>'+inr(d)+'</b> per kg ('+(c.costKg>0?(d/c.costKg*100).toFixed(0):0)+'% on cost).';
+      if(cur<c.sellKg-0.005)cmp+=' That is '+inr(c.sellKg-cur)+' per kg below your profit target.'}
+  }
+  set('compare',cmp);
+  var dl=c.dealer>0;
+  set('h-label',dl?'Shelf price per kg':'Per kg');
+  if(c.ready){
+    var pp=c.custKg*c.pieceG/1000;
+    set('h-piece',c.pieceG>0?inr(pp):'<span class="ph">Add piece weight</span>');
+    set('h-kg',inr(c.custKg));
+    var sub='';
+    if(c.pieceG>0)sub+='This batch gives <b>'+pcsText(c.pieces)+'</b>. Each costs you '+inr(c.costKg*c.pieceG/1000)+' and earns '+inr(c.profitKg*c.pieceG/1000)+'.';
+    else sub+='This batch makes <b>'+gText(c.approx)+'</b>.';
+    var bc=c.costKg*c.approx/1000,bg=c.sellKg*c.approx/1000;
+    sub+='<br>Batch cost '+inr(bc)+' · you receive '+inr(bg)+' · profit '+inr(bg-bc)+'.';
+    if(dl)sub+='<br>The dealer keeps '+inr(c.dealerKg)+' per kg.';
+    set('h-sub',sub);
+    var t2=c.custKg,seg=function(v){return v/t2*100};
+    var items=[['c-mat','Ingredients',c.mat],['c-oh','Other costs',c.oh],['c-pr','Your profit',c.profitKg]];
+    if(dl)items.push(['c-dl','Dealer margin',c.dealerKg]);
+    set('bar','<div class="bar" role="img" aria-label="Where the price goes">'+items.map(function(it){return '<span class="'+it[0]+'" style="width:'+seg(it[2]).toFixed(2)+'%"></span>'}).join('')+'</div><div class="legend">'+items.map(function(it){return '<div><i class="'+it[0]+'"></i>'+it[1]+'<b>'+inr(it[2])+' per kg · '+seg(it[2]).toFixed(0)+'%</b></div>'}).join('')+'</div>');
+    bar.hidden=false;
+    bar.innerHTML=(c.pieceG>0?'<div><b>'+inr(pp)+'</b><span>per piece</span></div>':'')+'<div><b>'+inr(c.custKg,0)+'</b><span>per kg</span></div>'+(c.pieceG>0?'<div><b>'+trim(Math.floor(c.pieces+0.05),0)+'</b><span>pieces</span></div>':'');
+  }else{
+    set('h-piece','<span class="ph">—</span>');set('h-kg','<span class="ph">—</span>');
+    set('h-sub',c.approx<=0?'Enter how much you want to make.':'Add the price of each ingredient (step 2) to see your price.');
+    set('bar','');bar.hidden=true;
+  }
+  var results=r.packs.map(function(pk){return (c.ready&&n(pk.size))?packCalc(r,c,pk):null});
+  var bestK=-1,bestA=-1,mk=-1e18,ma=-1e18,valid=results.filter(Boolean).length;
+  results.forEach(function(q,i){if(!q)return;if(q.perKg>mk){mk=q.perKg;bestK=i}if(q.profit>ma){ma=q.profit;bestA=i}});
+  r.packs.forEach(function(pk,i){
+    var q=results[i];
+    if(!q){set('pk-n-'+i,'');set('pk-price-'+i,'—');set('pk-sub-'+i,'');set('pk-sug-'+i,'');set('pk-pkg-'+i,'—');return}
+    set('pk-n-'+i,c.pieceG>0?pcsText(q.pieces):'');
+    set('pk-price-'+i,inr(q.charge,q.charge%1===0?0:2));
+    var sub='Packaging '+inr(q.pkg,0)+' · profit <b class="'+(q.profit<0?'neg':'')+'">'+inr(q.profit,0)+'</b> ('+inr(q.perKg,0)+' per kg)';
+    if(i===bestK&&valid>1)sub+=' <span class="pill good">Best per kg</span>';
+    set('pk-sub-'+i,sub);
+    set('pk-sug-'+i,'Suggested price: '+inr(q.suggested,q.suggested%1===0?0:2)+(n(pk.price)>0?'. The profit shown uses your price.':''));
+    set('pk-pkg-'+i,inr(q.pkg));
+  });
+  set('pk-best',valid>1?'Best profit per kg: <b>'+gText(n(r.packs[bestK].size))+'</b> pack ('+inr(results[bestK].perKg,0)+' per kg). Most profit per pack: <b>'+gText(n(r.packs[bestA].size))+'</b> ('+inr(results[bestA].profit,0)+').':'');
+}
+function shortages(c){
+  var seen={},out=[];
+  c.rows.forEach(function(x){if(x.ing&&x.short>0&&!seen[x.ing.id]){seen[x.ing.id]=1;out.push(x.ing.name+' (short by '+gText(x.short)+')')}});
+  return out;
+}
+function batchBarHTML(c){
+  var any=c.rows.some(function(x){return x.ing&&x.ing.stock!=null&&x.need>0});
+  if(!any)return '';
+  var sh=shortages(c);
+  if(S.ui.batch)return '<div class="notice" style="margin:0;display:block"><p><b>Take these ingredients out of stock?</b></p>'+(sh.length?'<p class="hint warn" style="margin-top:4px">Not enough of: '+esc(sh.join(', '))+'. Those drop to 0.</p>':'<p class="hint" style="margin-top:4px">You can undo this on the Stock tab.</p>')+'<div class="row" style="margin-top:10px"><button class="btn small primary" data-act="batch-do">Yes, update stock</button><button class="btn small" data-act="batch-cancel">Cancel</button></div></div>';
+  return (sh.length?'<p class="hint warn" style="margin-bottom:8px">Not enough stock of: '+esc(sh.join(', '))+'.</p>':'')+'<button class="btn" data-act="batch-ask">I made this batch: update my stock</button>';
+}
+
+/* ---------- stock view ---------- */
+function stockShell(){
+  return '<div class="cols"><div class="col">'+
+  '<section class="card" id="purchase" aria-labelledby="hb"><h2 id="hb">Bought something?</h2><p class="lead">Type what you bought and what you paid. We update stock and your average price per kg.</p>'+
+  '<div class="grid2" style="margin-top:0"><label class="fld"><span class="l">Ingredient</span><input class="ctl" type="text" list="ing-list" id="p-name" placeholder="Type or pick" autocomplete="off"></label>'+
+  '<div class="fld"><label class="l" for="p-qty">How much</label><span class="inp"><input id="p-qty" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><span class="u">kg</span></span></div>'+
+  '<div class="fld"><label class="l" for="p-paid">Total paid</label><span class="inp"><span class="u">₹</span><input id="p-paid" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></span></div></div>'+
+  '<p class="hint" id="p-hint" style="margin-top:10px" aria-live="polite"></p><p class="err" id="p-err" role="alert"></p>'+
+  '<div class="row" style="margin-top:12px"><button class="btn primary" data-act="save-buy">Add to stock</button></div></section>'+
+  '<section class="card cq" aria-labelledby="hs"><h2 id="hs">Your ingredients</h2><p class="lead" id="stocksum" style="margin-bottom:6px"></p>'+
+  '<div class="lhead sl"><span>Ingredient</span><span>In stock</span><span>Price per kg</span><span></span></div><div id="stocklist"></div></section></div>'+
+  '<div class="col"><section class="card cq" id="matcard" aria-labelledby="hm"><h2 id="hm" style="font-size:19px">Packaging materials</h2><p class="lead" style="margin-bottom:8px">Enter what you bought and paid. We work out the cost of each piece, then you choose what goes in each pack.</p><div class="lhead ml"><span>Material</span><span>Bought</span><span>Total paid</span><span>Used</span><span>Cost each</span><span></span></div><div id="matlist"></div><div class="row" style="margin-top:12px"><button class="btn small" data-act="add-mat">＋ Add material</button></div></section><section class="card" aria-labelledby="hh"><h2 id="hh" style="font-size:19px">Recent activity</h2><div id="hist"></div></section></div></div>';
+}
+function syncHint(){
+  var h=$('#p-hint');h.className='hint';h.textContent='';
+  var q=n($('#p-qty').value),paid=n($('#p-paid').value);
+  if(!q||!paid)return;
+  var per=paid/q,t='That is '+inr(per)+' per kg.',ing=ingByName($('#p-name').value||'');
+  if(ing&&ing.price>0){
+    var os=ing.stock==null?0:ing.stock,nc=((os/1000*ing.price)+paid)/((os/1000)+q);
+    t+=' Your average moves from '+inr(ing.price)+' to '+inr(nc)+'.';
+    if(per>ing.price*2||per<ing.price/2){h.className='hint warn';t+=' That is very different from usual. Check the amount and the total.'}
+  }
+  h.textContent=t;
+}
+function stockInfo(i){
+  var r=curRecipe(),t='';
+  if(i.stock!=null&&i.stock<=0)t='<span class="pill bad">Out of stock</span>';
+  if(i.stock!=null&&r){var need=calc(r).needBy[i.id];if(need>0)t+=(t?' ':'')+(need>i.stock+1e-9?'<span class="pill bad">Short for this batch by '+gText(need-i.stock)+'</span>':'<span class="pill good">Enough for this batch</span>')}
+  return t;
+}
+function eachText(m){return m.bought>0&&m.paid>0?inr(m.paid/m.bought):'—'}
+function matHTML(m){
+  return '<div class="line ml" data-mat="'+m.id+'"><label class="c-name"><span class="cl">Material</span><input class="ctl" type="text" data-mf="name" value="'+esc(m.name)+'" placeholder="e.g. Pouch 250 g" autocomplete="off" aria-label="Material name"></label>'+
+  '<label class="c-qty"><span class="cl">Bought</span><span class="inp"><input type="number" inputmode="decimal" min="0" step="any" data-mf="bought" value="'+val(m.bought)+'" placeholder="0" aria-label="How many you bought"><span class="u">pcs</span></span></label>'+
+  '<label class="c-price"><span class="cl">Total paid</span><span class="inp"><span class="u">₹</span><input type="number" inputmode="decimal" min="0" step="any" data-mf="paid" value="'+val(m.paid)+'" placeholder="0" aria-label="Total paid"></span></label>'+
+  '<label class="c-per"><span class="cl">Used</span><select class="ctl" data-mf="per" aria-label="Used once per pack or once per piece"><option value="pack"'+(m.per==='pack'?' selected':'')+'>per pack</option><option value="piece"'+(m.per==='piece'?' selected':'')+'>per piece</option></select></label>'+
+  '<div class="c-each"><span class="cl">Cost each</span><span data-out="meach-'+m.id+'">'+eachText(m)+'</span></div>'+
+  '<button class="icon c-del" data-act="del-mat" data-id="'+m.id+'" aria-label="Remove this material">×</button></div>';
+}
+function renderMaterials(){
+  $('#matlist').innerHTML=S.materials.length?S.materials.map(matHTML).join(''):'<p class="muted" style="padding:10px 0">No materials yet. Add pouches, boxes, labels or wrappers.</p>';
+}
+function renderStockList(){
+  var all=S.ingredients.slice().sort(function(a,b){return a.name.localeCompare(b.name)});
+  var value=all.reduce(function(s,i){return s+(i.stock||0)/1000*i.price},0);
+  $('#stocksum').textContent=all.length?all.length+' ingredient'+(all.length>1?'s':'')+' · stock worth '+inr(value,0)+'. Change any number below and it saves itself.':'';
+  if(!all.length){$('#stocklist').innerHTML='<p class="muted" style="padding:12px 0">Nothing here yet. Add a purchase above, or type ingredients into a recipe.</p>';return}
+  $('#stocklist').innerHTML=all.map(function(i){
+    var conf=S.ui.confirm==='ing:'+i.id;
+    return '<div class="line sl" data-ing="'+i.id+'">'+
+    '<label class="c-name"><span class="cl">Ingredient</span><input class="ctl" type="text" data-sf="name" value="'+esc(i.name)+'" aria-label="Ingredient name"></label>'+
+    '<label class="c-qty"><span class="cl">In stock</span><span class="inp"><input type="number" inputmode="decimal" min="0" step="any" data-sf="stock" value="'+(i.stock==null?'':val(+(i.stock/1000).toFixed(4)))+'" placeholder="—" aria-label="Stock in kg"><span class="u">kg</span></span></label>'+
+    '<label class="c-price"><span class="cl">Price per kg</span><span class="inp"><span class="u">₹</span><input type="number" inputmode="decimal" min="0" step="any" data-sf="price" value="'+val(i.price)+'" placeholder="0" aria-label="Price per kg"></span></label>'+
+    (conf?'':'<button class="icon c-del" data-act="del-ing" data-id="'+i.id+'" aria-label="Remove '+esc(i.name)+'">×</button>')+
+    '<div class="c-alert" data-out="sinfo-'+i.id+'">'+(conf?'Remove “'+esc(i.name)+'”? <button class="btn small danger" data-act="del-ing-yes" data-id="'+i.id+'">Yes, remove</button> <button class="btn small" data-act="del-ing-no">Keep</button>':stockInfo(i))+'</div></div>';
+  }).join('');
+}
+function renderHistory(){
+  var h=S.history.slice(0,8);
+  if(!h.length){$('#hist').innerHTML='<p class="muted">Purchases and batches you record will show up here.</p>';return}
+  $('#hist').innerHTML='<ul class="hist">'+h.map(function(e,idx){
+    var t=e.type==='buy'?'Bought <b>'+esc(e.name)+'</b> · '+gText(e.grams)+' for '+inr(e.paid):'Made <b>'+esc(e.name)+'</b> · '+(e.pieces?pcsText(e.pieces)+' · ':'')+gText(e.approx);
+    return '<li><span><span class="d">'+dshort(e.t)+'</span>'+t+'</span>'+(idx===0?'<button class="btn small" data-act="undo">Undo</button>':'')+'</li>';
+  }).join('')+'</ul>';
+}
+
+function updateTabs(){
+  ['recipes','stock'].forEach(function(t){$('#tab-'+t).setAttribute('aria-selected',S.ui.tab===t?'true':'false')});
+  var k=shortCount(),b=$('#lowbadge');b.hidden=!k;b.textContent=k;b.title=k+' ingredient'+(k>1?'s':'')+' short for the current batch';
+  $('#sample').hidden=!S.ui.sample;
+}
+function renderFooter(){$('#backup').hidden=!S.ui.backup;if(S.ui.backup)$('#bk-text').value=JSON.stringify(S)}
+function fillList(){$('#ing-list').innerHTML=S.ingredients.map(function(i){return '<option value="'+esc(i.name)+'">'}).join('')}
+function render(){
+  fillList();
+  if(S.ui.tab==='stock'){$('#app').innerHTML=stockShell();renderStockList();renderMaterials();renderHistory()}
+  else $('#app').innerHTML=recipeView();
+  renderFooter();refresh();
+}
+var tt;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},3800)}
+
+/* ---------- actions ---------- */
+function savePurchase(){
+  var err=$('#p-err');err.textContent='';
+  var name=$('#p-name').value.trim(),q=n($('#p-qty').value),paid=n($('#p-paid').value);
+  if(!name){err.textContent='Type the ingredient you bought.';return}
+  if(!q){err.textContent='Enter how many kg you bought.';return}
+  if(!paid){err.textContent='Enter the total you paid, in rupees.';return}
+  var existed=!!ingByName(name),ing=findOrCreate(name);
+  var prev={stock:ing.stock,price:ing.price};
+  var os=ing.stock==null?0:ing.stock,g=q*1000,ns=os+g;
+  ing.price=((os/1000*ing.price)+paid)/(ns/1000);ing.stock=ns;
+  S.history.unshift({id:uid(),t:today(),type:'buy',ingId:ing.id,name:ing.name,grams:g,paid:paid,prev:prev,created:!existed});
+  S.history=S.history.slice(0,100);
+  save();render();
+  toast('Added '+gText(g)+' of '+ing.name+'. Average price is now '+inr(ing.price)+' per kg.');
+}
+function doBatch(){
+  var r=curRecipe(),c=calc(r),list=[];
+  Object.keys(c.needBy).forEach(function(id){
+    var i=ingById(id);if(!i||i.stock==null)return;
+    var take=Math.min(c.needBy[id],i.stock);i.stock-=take;list.push({ingId:id,amount:take});
+  });
+  S.history.unshift({id:uid(),t:today(),type:'batch',name:r.name||'Untitled',approx:c.approx,pieces:c.pieceG>0?c.pieces:0,deductions:list});
+  S.ui.batch=false;save();render();toast('Stock updated. You can undo it on the Stock tab.');
+}
+function undo(){
+  var h=S.history[0];if(!h)return;
+  if(h.type==='buy'){var i=ingById(h.ingId);if(i){i.stock=h.prev.stock;i.price=h.prev.price}}
+  else h.deductions.forEach(function(d){var i=ingById(d.ingId);if(i)i.stock=(i.stock||0)+d.amount});
+  S.history.shift();save();render();toast('Last entry undone.');
+}
+function act(a,b){
+  var r=curRecipe();
+  switch(a){
+    case 'tab':S.ui.tab=b.dataset.tab;S.ui.confirm=null;S.ui.batch=false;save();render();window.scrollTo(0,0);break;
+    case 'goto-price':var pe=$('#price');if(pe)pe.scrollIntoView({behavior:'smooth',block:'start'});break;
+    case 'new-recipe':var nr=blankRecipe();S.recipes.push(nr);S.ui.rid=nr.id;S.ui.confirm=null;S.ui.batch=false;S.ui.tab='recipes';save();render();var nf=$('[data-k="name"]');if(nf){nf.focus();nf.select()}break;
+    case 'del-recipe':S.ui.confirm='recipe';render();break;
+    case 'del-recipe-no':S.ui.confirm=null;render();break;
+    case 'del-recipe-yes':S.recipes=S.recipes.filter(function(x){return x.id!==r.id});S.ui.rid=S.recipes[0]?S.recipes[0].id:null;S.ui.confirm=null;save();render();toast('Recipe deleted.');break;
+    case 'add-line':r.lines.push({id:uid(),ingId:'',qty:0});save();render();var ns=$$('[data-lf="name"]');if(ns.length)ns[ns.length-1].focus();break;
+    case 'del-line':r.lines=r.lines.filter(function(l){return l.id!==b.dataset.id});if(!r.lines.length)r.lines.push({id:uid(),ingId:'',qty:0});save();render();break;
+    case 'add-pack':r.packs.push({size:100,price:0,use:{}});S.ui.openPack=r.packs.length-1;save();render();var pi=$$('[data-pkf="size"]');if(pi.length){pi[pi.length-1].focus();pi[pi.length-1].select()}break;
+    case 'pk-open':var ix=+b.dataset.i;S.ui.openPack=S.ui.openPack===ix?null:ix;render();break;
+    case 'goto-mats':S.ui.tab='stock';save();render();var mc=$('#matcard');if(mc)mc.scrollIntoView({block:'start'});break;
+    case 'add-mat':S.materials.push({id:uid(),name:'',bought:0,paid:0,per:'pack'});save();renderMaterials();var mn=$$('[data-mf="name"]');if(mn.length)mn[mn.length-1].focus();break;
+    case 'del-mat':var mid=b.dataset.id;S.materials=S.materials.filter(function(m){return m.id!==mid});S.recipes.forEach(function(x){x.packs.forEach(function(q){delete q.use[mid]})});save();renderMaterials();toast('Material removed.');break;
+    case 'del-pack':r.packs.splice(+b.dataset.i,1);S.ui.openPack=null;save();render();break;
+    case 'profit':r.profit=+b.dataset.p;var pf=$('#f-profit');if(pf)pf.value=r.profit;save();refresh();break;
+    case 'split-on':r.split=true;if(!OH.some(function(o){return n(r.oh[o[0]])})){var c0=calc(r);r.oh.other=+(c0.oh).toFixed(2)}save();render();break;
+    case 'split-off':var c1=calc(r);r.ohUnit='kg';r.ohVal=+(c1.oh).toFixed(2);r.split=false;save();render();break;
+    case 'batch-ask':S.ui.batch=true;refresh();break;
+    case 'batch-cancel':S.ui.batch=false;refresh();break;
+    case 'batch-do':doBatch();break;
+    case 'save-buy':savePurchase();break;
+    case 'del-ing':S.ui.confirm='ing:'+b.dataset.id;renderStockList();break;
+    case 'del-ing-no':S.ui.confirm=null;renderStockList();break;
+    case 'del-ing-yes':
+      var id=b.dataset.id,used=S.recipes.filter(function(x){return x.lines.some(function(l){return l.ingId===id})}).map(function(x){return x.name});
+      S.ui.confirm=null;
+      if(used.length){renderStockList();toast('Used in '+used.join(', ')+'. Remove it there first.');break}
+      S.ingredients=S.ingredients.filter(function(i){return i.id!==id});save();fillList();renderStockList();updateTabs();toast('Removed.');break;
+    case 'undo':undo();break;
+    case 'clear-sample':S.ingredients=[];S.materials=[];S.recipes=[];S.history=[];S.ui.rid=null;S.ui.sample=false;S.ui.tab='recipes';save();render();toast('Sample cleared. Add your first recipe.');break;
+    case 'toggle-backup':S.ui.backup=!S.ui.backup;renderFooter();if(S.ui.backup)$('#bk-text').focus();break;
+    case 'copy-backup':
+      var ta=$('#bk-text');ta.value=JSON.stringify(S);ta.select();
+      var ok=false;try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value);ok=true}else ok=document.execCommand('copy')}catch(e){try{ok=document.execCommand('copy')}catch(e2){}}
+      toast(ok?'Backup copied.':'Select the text and copy it yourself.');break;
+    case 'restore-backup':
+      var er=$('#bk-err');er.textContent='';
+      try{var o=JSON.parse($('#bk-text').value);if(!o||!Array.isArray(o.ingredients)||!Array.isArray(o.recipes))throw new Error('x');S=normalize(o);S.ui.backup=false;save();render();toast('Backup restored.')}
+      catch(e){er.textContent='That text isn’t a valid backup. Paste the full text you copied earlier.'}
+      break;
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){var b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b)});
+document.addEventListener('toggle',function(e){if(e.target&&e.target.id==='more'){S.ui.more=e.target.open;save()}},true);
+
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.tagName==='SELECT')return;
+  if(t.closest&&t.closest('#purchase')){syncHint();return}
+  if(t.dataset.sf){
+    var row=t.closest('[data-ing]'),ing=row&&ingById(row.dataset.ing);if(!ing)return;
+    if(t.dataset.sf==='stock')ing.stock=t.value===''?null:n(t.value)*1000;
+    else if(t.dataset.sf==='price')ing.price=n(t.value);
+    else if(t.dataset.sf==='name'){if(t.value.trim())ing.name=t.value.trim();fillList()}
+    save();set('sinfo-'+ing.id,stockInfo(ing));updateTabs();return;
+  }
+  if(t.dataset.mf){
+    var mm=S.materials.find(function(m){return m.id===t.closest('[data-mat]').dataset.mat});if(!mm)return;
+    if(t.dataset.mf==='name')mm.name=t.value;else mm[t.dataset.mf]=n(t.value);
+    save();set('meach-'+mm.id,eachText(mm));return;
+  }
+  var r=curRecipe();if(!r||S.ui.tab!=='recipes')return;
+  if(t.dataset.k){var k=t.dataset.k;r[k]=(k==='name')?t.value:n(t.value);if(k==='profit'||k==='ohVal'){}}
+  else if(t.dataset.oh){r.oh[t.dataset.oh]=n(t.value)}
+  else if(t.dataset.pkf){r.packs[+t.dataset.i][t.dataset.pkf]=n(t.value)}
+  else if(t.dataset.use){var pk=r.packs[+t.dataset.i],uv=n(t.value);if(uv)pk.use[t.dataset.use]=uv;else delete pk.use[t.dataset.use]}
+  else if(t.dataset.lf){
+    var line=r.lines.find(function(l){return l.id===t.closest('[data-line]').dataset.line});if(!line)return;
+    if(t.dataset.lf==='qty')line.qty=n(t.value);
+    else if(t.dataset.lf==='price'){var g=ingById(line.ingId);if(g)g.price=n(t.value)}
+    else return;
+  }else return;
+  save();refresh();
+});
+
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==='p-name'){syncHint();return}
+  if(t.id==='rsel'){S.ui.rid=t.value;S.ui.batch=false;S.ui.confirm=null;save();render();return}
+  var r=curRecipe();
+  if(t.dataset.lf==='name'&&r){
+    var line=r.lines.find(function(l){return l.id===t.closest('[data-line]').dataset.line});if(!line)return;
+    var nm=t.value.trim();
+    if(!nm)line.ingId='';else{var ing=findOrCreate(nm);line.ingId=ing.id}
+    save();render();
+    if(nm){var pr=$('[data-line="'+line.id+'"] [data-lf="price"]');var g2=ingById(line.ingId);if(pr&&g2&&!g2.price)pr.focus()}
+    return;
+  }
+  if(t.dataset.sf==='name'){renderStockList();return}
+  if(t.dataset.mf==='per'){var m2=S.materials.find(function(m){return m.id===t.closest('[data-mat]').dataset.mat});if(m2){m2.per=t.value;save()}return}
+  if(t.tagName!=='SELECT'||!r)return;
+  if(t.dataset.k==='reqUnit'){
+    var c=calc(r),g=c.reqG,to=t.value;
+    if(to==='pcs'&&c.pieceG>0)r.req=Math.round(g/c.pieceG);
+    else if(to==='kg')r.req=+(g/1000).toFixed(3);
+    else if(to==='g')r.req=Math.round(g);
+    r.reqUnit=to;save();render();return;
+  }
+  if(t.dataset.k==='ohUnit'||t.dataset.k==='roundPrice'){r[t.dataset.k]=t.dataset.k==='roundPrice'?+t.value:t.value;save();render()}
+});
+
+S=load()||sampleData();
+save();
+render();
+})();
+</script>
+</body>
+</html>
